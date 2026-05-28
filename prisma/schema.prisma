@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Genre {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  songs     Song[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Song {
+  id              Int       @id @default(autoincrement())
+  title           String
+  artist          String
+  audioUrl        String
+  lastPlayedAt    DateTime?
+  hostScript      String?
+  hostAudioUrl    String?
+  hostGeneratedAt DateTime?
+  genreId         Int
+  genre           Genre     @relation(fields: [genreId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([genreId, lastPlayedAt])
+  @@unique([title, artist])
+}
+
+model GeneratedAudioCache {
+  id          String   @id
+  kind        String
+  script      String
+  audioUrl    String
+  generatedAt DateTime @default(now())
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([kind, expiresAt])
+}

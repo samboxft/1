@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(79, 70, 229, 0.35), transparent 34rem),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.22), transparent 32rem),
+    #050816;
+  color: #f8fafc;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.visualizer-bar {
+  animation: pulse-bar 1.15s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+.visualizer-bar:nth-child(2n) {
+  animation-duration: 0.95s;
+}
+
+.visualizer-bar:nth-child(3n) {
+  animation-duration: 1.35s;
+}
+
+@keyframes pulse-bar {
+  0%,
+  100% {
+    transform: scaleY(0.28);
+    opacity: 0.55;
+  }
+
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
