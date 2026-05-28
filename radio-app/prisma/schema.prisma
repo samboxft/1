@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Genre {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  songs Song[]
+}
+
+model Song {
+  id           Int       @id @default(autoincrement())
+  title        String
+  artist       String
+  genre        Genre     @relation(fields: [genreId], references: [id])
+  genreId      Int
+  audioUrl     String
+  lastPlayedAt DateTime?
+  hostScript   String?
+  hostAudioUrl String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([title, artist])
+}
+
+model NewsCache {
+  id         Int      @id @default(autoincrement())
+  audioUrl   String
+  script     String
+  generatedAt DateTime @default(now())
+}
