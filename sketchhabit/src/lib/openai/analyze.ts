@@ -4,18 +4,23 @@ export async function analyzeDrawing(
   base64Image: string,
   promptText: string
 ): Promise<AIFeedback> {
-  const response = await fetch("/api/analyze", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ base64Image, promptText }),
-  });
+  try {
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ base64Image, promptText }),
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Analysis failed");
+    if (response.ok) {
+      return response.json();
+    }
+    // Non-OK response (including 404 on static export) → use mock
+    throw new Error("API unavailable");
+  } catch {
+    // Fallback for static deployments or network errors
+    await new Promise((r) => setTimeout(r, 2500));
+    return getMockFeedback(promptText);
   }
-
-  return response.json();
 }
 
 // Fallback mock feedback for demo mode (when no API key is set)
