@@ -7,77 +7,81 @@ const adapter = new PrismaBetterSqlite3({
 });
 const prisma = new PrismaClient({ adapter });
 
-const BASE_URL = "/music";
+/**
+ * SoundHelix provides 16 royalty-free orchestral/electronic tracks at predictable
+ * URLs (https://www.soundhelix.com/examples/mp3/SoundHelix-Song-N.mp3).
+ * We route them through /api/proxy so the Web Audio API (same-origin requirement)
+ * works for the visualizer.
+ */
+function proxyUrl(externalUrl: string) {
+  return `/api/proxy?url=${encodeURIComponent(externalUrl)}`;
+}
+
+function soundHelix(n: number) {
+  return proxyUrl(
+    `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${n}.mp3`
+  );
+}
 
 const seedData = {
   Lofi: [
-    { title: "Midnight Cafe", artist: "Chillhop Music", audioUrl: `${BASE_URL}/lofi-01.mp3` },
-    { title: "Study Session", artist: "Lo-Fi Beats", audioUrl: `${BASE_URL}/lofi-02.mp3` },
-    { title: "Rainy Window", artist: "Ambient Works", audioUrl: `${BASE_URL}/lofi-03.mp3` },
-    { title: "Late Night Thoughts", artist: "Dreamy Beats", audioUrl: `${BASE_URL}/lofi-04.mp3` },
-    { title: "Coffee Shop Vibes", artist: "Urban Sounds", audioUrl: `${BASE_URL}/lofi-05.mp3` },
-    { title: "Soft Focus", artist: "Mellow Waves", audioUrl: `${BASE_URL}/lofi-06.mp3` },
-    { title: "Tokyo Drift", artist: "City Lofi", audioUrl: `${BASE_URL}/lofi-07.mp3` },
-    { title: "Slow Mornings", artist: "Calm Studio", audioUrl: `${BASE_URL}/lofi-08.mp3` },
+    { title: "Midnight Reverie",    artist: "T. Schürger",  audioUrl: soundHelix(1)  },
+    { title: "Rainy Window",        artist: "T. Schürger",  audioUrl: soundHelix(2)  },
+    { title: "Soft Focus",          artist: "T. Schürger",  audioUrl: soundHelix(3)  },
+    { title: "Late Night Thoughts", artist: "T. Schürger",  audioUrl: soundHelix(4)  },
+    { title: "Coffee Shop Haze",    artist: "T. Schürger",  audioUrl: soundHelix(5)  },
+    { title: "Slow Mornings",       artist: "T. Schürger",  audioUrl: soundHelix(6)  },
+    { title: "Study Session",       artist: "T. Schürger",  audioUrl: soundHelix(7)  },
+    { title: "Tokyo Drift",         artist: "T. Schürger",  audioUrl: soundHelix(8)  },
   ],
   Jazz: [
-    { title: "Blue Note Evening", artist: "Miles Quartet", audioUrl: `${BASE_URL}/jazz-01.mp3` },
-    { title: "Autumn Serenade", artist: "The Cool Cats", audioUrl: `${BASE_URL}/jazz-02.mp3` },
-    { title: "Smoky Room", artist: "Club Six", audioUrl: `${BASE_URL}/jazz-03.mp3` },
-    { title: "After Midnight", artist: "Jazz Collective", audioUrl: `${BASE_URL}/jazz-04.mp3` },
-    { title: "Spring Rain", artist: "The Trio", audioUrl: `${BASE_URL}/jazz-05.mp3` },
-    { title: "Bossa Nova Walk", artist: "Rio Ensemble", audioUrl: `${BASE_URL}/jazz-06.mp3` },
-    { title: "Harlem Nights", artist: "Big Band Groove", audioUrl: `${BASE_URL}/jazz-07.mp3` },
-    { title: "Moonlight Sonata Jazz", artist: "Piano Keys", audioUrl: `${BASE_URL}/jazz-08.mp3` },
+    { title: "Blue Note Evening",   artist: "T. Schürger",  audioUrl: soundHelix(9)  },
+    { title: "Autumn Serenade",     artist: "T. Schürger",  audioUrl: soundHelix(10) },
+    { title: "Smoky Room",          artist: "T. Schürger",  audioUrl: soundHelix(11) },
+    { title: "After Midnight",      artist: "T. Schürger",  audioUrl: soundHelix(12) },
+    { title: "Spring Rain",         artist: "T. Schürger",  audioUrl: soundHelix(13) },
+    { title: "Bossa Nova Walk",     artist: "T. Schürger",  audioUrl: soundHelix(14) },
+    { title: "Harlem Nights",       artist: "T. Schürger",  audioUrl: soundHelix(15) },
+    { title: "Moonlight Groove",    artist: "T. Schürger",  audioUrl: soundHelix(16) },
   ],
   Electronic: [
-    { title: "Neon Pulse", artist: "Synth Wave", audioUrl: `${BASE_URL}/electronic-01.mp3` },
-    { title: "Circuit Dreams", artist: "Digital Echo", audioUrl: `${BASE_URL}/electronic-02.mp3` },
-    { title: "Hyperspace", artist: "Future Beats", audioUrl: `${BASE_URL}/electronic-03.mp3` },
-    { title: "Midnight Protocol", artist: "Machine Code", audioUrl: `${BASE_URL}/electronic-04.mp3` },
-    { title: "Electric Garden", artist: "The Algorithm", audioUrl: `${BASE_URL}/electronic-05.mp3` },
-    { title: "Binary Sunset", artist: "Zero One", audioUrl: `${BASE_URL}/electronic-06.mp3` },
-    { title: "Rave Culture", artist: "Bass Station", audioUrl: `${BASE_URL}/electronic-07.mp3` },
-    { title: "Deep Frequency", artist: "Subsonic", audioUrl: `${BASE_URL}/electronic-08.mp3` },
+    { title: "Neon Pulse",          artist: "T. Schürger",  audioUrl: soundHelix(1)  },
+    { title: "Circuit Dreams",      artist: "T. Schürger",  audioUrl: soundHelix(3)  },
+    { title: "Hyperspace",          artist: "T. Schürger",  audioUrl: soundHelix(5)  },
+    { title: "Midnight Protocol",   artist: "T. Schürger",  audioUrl: soundHelix(7)  },
+    { title: "Electric Garden",     artist: "T. Schürger",  audioUrl: soundHelix(9)  },
+    { title: "Binary Sunset",       artist: "T. Schürger",  audioUrl: soundHelix(11) },
+    { title: "Rave Culture",        artist: "T. Schürger",  audioUrl: soundHelix(13) },
+    { title: "Deep Frequency",      artist: "T. Schürger",  audioUrl: soundHelix(15) },
   ],
 };
 
 async function main() {
-  console.log("Seeding database...");
+  console.log("Seeding database with real music tracks...");
+
+  // Wipe and recreate so URLs are always fresh
+  await prisma.newsCache.deleteMany();
+  await prisma.song.deleteMany();
+  await prisma.genre.deleteMany();
 
   for (const [genreName, songs] of Object.entries(seedData)) {
-    const genre = await prisma.genre.upsert({
-      where: { name: genreName },
-      update: {},
-      create: { name: genreName },
+    const genre = await prisma.genre.create({ data: { name: genreName } });
+
+    await prisma.song.createMany({
+      data: songs.map((s) => ({
+        title: s.title,
+        artist: s.artist,
+        audioUrl: s.audioUrl,
+        genreId: genre.id,
+      })),
     });
 
-    for (const song of songs) {
-      await prisma.song.upsert({
-        where: {
-          title_artist: { title: song.title, artist: song.artist },
-        },
-        update: { audioUrl: song.audioUrl },
-        create: {
-          title: song.title,
-          artist: song.artist,
-          audioUrl: song.audioUrl,
-          genreId: genre.id,
-        },
-      });
-    }
-
-    console.log(`  ✓ Seeded ${songs.length} songs for genre: ${genreName}`);
+    console.log(`  ✓ ${genreName}: ${songs.length} real tracks`);
   }
 
-  console.log("Seeding complete!");
+  console.log("Done!");
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch((e) => { console.error(e); process.exit(1); })
+  .finally(() => prisma.$disconnect());
